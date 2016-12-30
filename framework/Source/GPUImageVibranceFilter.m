@@ -1,9 +1,9 @@
 //
 //  GPUImageVibranceFilter.m
-//  
+//  GPUImage
 //
-//  Created by github.com/r3mus on 8/13/15.
-//
+//  Created by Xin Zeng on 12/27/16.
+//  Copyright © 2016 Brad Larson. All rights reserved.
 //
 
 #import "GPUImageVibranceFilter.h"
@@ -11,37 +11,39 @@
 #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
 NSString *const kGPUImageVibranceFragmentShaderString = SHADER_STRING
 (
-    varying highp vec2 textureCoordinate;
+ varying highp vec2 textureCoordinate;
  
-    uniform sampler2D inputImageTexture;
-    uniform lowp float vibrance;
+ uniform sampler2D inputImageTexture;
  
-    void main() {
-        lowp vec4 color = texture2D(inputImageTexture, textureCoordinate);
-        lowp float average = (color.r + color.g + color.b) / 3.0;
-        lowp float mx = max(color.r, max(color.g, color.b));
-        lowp float amt = (mx - average) * (-vibrance * 3.0);
-        color.rgb = mix(color.rgb, vec3(mx), amt);
-        gl_FragColor = color;
-    }
-);
+ uniform mediump float vibrance;
+ 
+ void main()
+ {
+    mediump vec4 textureColor = texture2D(inputImageTexture, textureCoordinate);
+    mediump float mx = max(textureColor.r, max(textureColor.g, textureColor.b));
+    mediump float amt = (mx - (textureColor.r + textureColor.g + textureColor.b)/3.0) * (-vibrance * 3.0);
+    textureColor.rgb = mix(textureColor.rgb, vec3(mx), amt);
+    gl_FragColor = textureColor;
+ }
+ );
 #else
 NSString *const kGPUImageVibranceFragmentShaderString = SHADER_STRING
 (
-    varying vec2 textureCoordinate;
+ varying highp vec2 textureCoordinate;
  
-    uniform sampler2D inputImageTexture;
-    uniform float vibrance;
+ uniform sampler2D inputImageTexture;
  
-    void main() {
-        vec4 color = texture2D(inputImageTexture, textureCoordinate);
-        float average = (color.r + color.g + color.b) / 3.0;
-        float mx = max(color.r, max(color.g, color.b));
-        float amt = (mx - average) * (-vibrance * 3.0);
-        color.rgb = mix(color.rgb, vec3(mx), amt);
-        gl_FragColor = color;
-    }
-);
+ uniform float vibrance;
+ 
+ void main()
+ {
+    vec4 textureColor = texture2D(inputImageTexture, textureCoordinate);
+    float mx = max(textureColor.r, max(textureColor.g, textureColor.b));
+    float amt = (mx - (textureColor.r + textureColor.g + textureColor.b)/3.0) * (-vibrance * 3.0);
+    textureColor.rgb = mix(textureColor.rgb, vec3(mx), amt);
+    gl_FragColor = textureColor;
+ }
+ );
 #endif
 
 @implementation GPUImageVibranceFilter
@@ -59,7 +61,7 @@ NSString *const kGPUImageVibranceFragmentShaderString = SHADER_STRING
     }
     
     vibranceUniform = [filterProgram uniformIndex:@"vibrance"];
-    self.vibrance = 0.0;
+    self.vibrance = 0;
     
     return self;
 }
@@ -67,12 +69,13 @@ NSString *const kGPUImageVibranceFragmentShaderString = SHADER_STRING
 #pragma mark -
 #pragma mark Accessors
 
-- (void)setVibrance:(GLfloat)vibrance;
+- (void)setVibrance:(CGFloat)newValue;
 {
-    _vibrance = vibrance;
+    _vibrance = newValue;
     
     [self setFloat:_vibrance forUniform:vibranceUniform program:filterProgram];
 }
+
 
 @end
 

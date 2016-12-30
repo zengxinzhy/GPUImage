@@ -10,4 +10,6 @@
 // This sets the spacing between texels (in pixels) when sampling for the first. By default, this is 1.0
 @property(readwrite, nonatomic) CGFloat verticalTexelSpacing, horizontalTexelSpacing;
 
+- (void)switchToVertexShader:(NSString *)newVertexShader fragmentShader:(NSString *)newFragmentShader;
+
 @end
